@@ -228,7 +228,20 @@ class BulkEmailReportsStream(ReportsStream):
         th.Property("revenue", th.StringType),
         th.Property("profit", th.StringType),
         th.Property("currency", th.StringType),
+        # ✅ Dodati flattened primary key fields:
+        th.Property("campaign_id", th.IntegerType, description="Derived from campaign.id"),
+        th.Property("responder_id", th.IntegerType, description="Derived from responder.id"),  
+        th.Property("supplier_id", th.IntegerType, description="Derived from supplier.id"),
+        th.Property("push_id", th.IntegerType, description="Derived from push.id"),
     ).to_dict()
+
+    def post_process(self, row: dict, context: dict | None = None) -> dict | None:
+        """Add flattened primary key fields."""
+        row["campaign_id"] = row["campaign"]["id"]
+        row["responder_id"] = row["responder"]["id"]  
+        row["supplier_id"] = row["supplier"]["id"]
+        row["push_id"] = row["push"]["id"]
+        return row
 
 
 class BulkSmsReportsStream(ReportsStream):
@@ -273,7 +286,20 @@ class BulkSmsReportsStream(ReportsStream):
         th.Property("revenue", th.StringType),
         th.Property("profit", th.StringType),
         th.Property("currency", th.StringType),
+        # ✅ Dodati flattened primary key fields:
+        th.Property("campaign_id", th.IntegerType, description="Derived from campaign.id"),
+        th.Property("responder_id", th.IntegerType, description="Derived from responder.id"),  
+        th.Property("supplier_id", th.IntegerType, description="Derived from supplier.id"),
+        th.Property("push_id", th.IntegerType, description="Derived from push.id"),
     ).to_dict()
+
+    def post_process(self, row: dict, context: dict | None = None) -> dict | None:
+        """Add flattened primary key fields."""
+        row["campaign_id"] = row["campaign"]["id"]
+        row["responder_id"] = row["responder"]["id"]  
+        row["supplier_id"] = row["supplier"]["id"]
+        row["push_id"] = row["push"]["id"]
+        return row
 
 
 class SupplierReportsStream(ReportsStream):
@@ -366,51 +392,45 @@ class BuyerReportsStream(ReportsStream):
     
     name = "buyer_reports"
     path = "/reports/buyer"
-    primary_keys = ["campaign_id", "buyer_id"]
+    primary_keys = ["campaign_id", "buyer_id"]  # ✅ Ispravno - samo campaign i buyer
     replication_key = None
     
     schema = th.PropertiesList(
         th.Property("campaign", th.ObjectType(
-            th.Property("id", th.IntegerType),
+            th.Property("id", th.StringType),  # ✅ StringType kao u dokumentaciji
             th.Property("name", th.StringType),
-            th.Property("reference", th.StringType),
-        )),
-        th.Property("responder", th.ObjectType(
-            th.Property("id", th.IntegerType),
             th.Property("reference", th.StringType),
         )),
         th.Property("supplier", th.ObjectType(
-            th.Property("id", th.IntegerType),
+            th.Property("id", th.StringType),
             th.Property("name", th.StringType),
             th.Property("sid", th.StringType),
         )),
-        th.Property("push", th.ObjectType(
-            th.Property("id", th.IntegerType),
+        th.Property("buyer", th.ObjectType(
+            th.Property("id", th.StringType),
             th.Property("name", th.StringType),
+            th.Property("bid", th.StringType),
         )),
-        th.Property("advertiser", th.ObjectType(
-            th.Property("id", th.IntegerType),
-            th.Property("name", th.StringType),
-        )),
-        th.Property("sent", th.StringType),
-        th.Property("delivered", th.StringType),
-        th.Property("opened", th.StringType),
-        th.Property("clicks", th.StringType),
-        th.Property("conversions", th.StringType),
-        th.Property("bounced", th.StringType),
-        th.Property("unsubscribed", th.StringType),
-        th.Property("cost", th.StringType),
-        th.Property("revenue", th.StringType),
-        th.Property("profit", th.StringType),
+        th.Property("posted", th.IntegerType),
+        th.Property("accepted", th.IntegerType),
+        th.Property("sold", th.IntegerType),
+        th.Property("rejected", th.IntegerType),
+        th.Property("approvedCR", th.NumberType),
+        th.Property("returned", th.IntegerType),
+        th.Property("returnedPercent", th.NumberType),
+        th.Property("revenue", th.NumberType),
+        th.Property("RPL", th.NumberType),
+        th.Property("RPS", th.NumberType),
         th.Property("currency", th.StringType),
+        # ✅ Flattened primary keys - samo campaign i buyer
+        th.Property("campaign_id", th.StringType, description="Derived from campaign.id"),
+        th.Property("buyer_id", th.StringType, description="Derived from buyer.id"),
     ).to_dict()
 
     def post_process(self, row: dict, context: dict | None = None) -> dict | None:
         """Add flattened primary key fields."""
         row["campaign_id"] = row["campaign"]["id"]
-        row["responder_id"] = row["responder"]["id"]  
-        row["supplier_id"] = row["supplier"]["id"]
-        row["push_id"] = row["push"]["id"]
+        row["buyer_id"] = row["buyer"]["id"]
         return row
 
     def get_url_params(
