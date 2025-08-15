@@ -310,9 +310,10 @@ class SupplierReportsStream(ReportsStream):
     primary_keys = ["campaign_id", "supplier_id"]
     replication_key = None
     
-    def get_schema(self) -> dict:
-        """Override get_schema to force complete schema."""
-        return {
+    # ✅ Direktno postavljanje _schema attribute
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._schema = {
             "type": "object",
             "properties": {
                 "campaign": {
@@ -414,9 +415,10 @@ class BuyerReportsStream(ReportsStream):
     primary_keys = ["campaign_id", "buyer_id"]
     replication_key = None
     
-    def get_schema(self) -> dict:
-        """Override get_schema to force complete schema."""
-        return {
+    # ✅ Direktno postavljanje _schema attribute
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._schema = {
             "type": "object",
             "properties": {
                 "campaign": {
