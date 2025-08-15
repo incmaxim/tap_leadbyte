@@ -173,6 +173,11 @@ class LeadByteStream(RESTStream):
             pass
 
     def _request(self, prepared_request, context):
+        # ✅ DODATI OVAJ LOG:
+        # Log complete URL for debugging
+        full_url = prepared_request.url
+        self.logger.info(f"🔗 API Call [{self.name}]: {full_url}")
+        
         # Add delay for report endpoints to avoid rate limiting
         if "/reports/" in prepared_request.url:
             time.sleep(1)  # 1 sekunda delay
