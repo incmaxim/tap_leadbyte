@@ -7,5 +7,19 @@
     "campaign_ids": ["all"],
     "supplier_ids": [],
     "responder_ids": [],
-    "buyer_ids": []
+    "buyer_ids": [],
+    "debug": false,
+    "group_by": "Campaign",
+    "date_preset": null,
+    "include_non_supplier_leads": false,
+    "lead_type_api": true,
+    "lead_type_import": false,
+    "show_supplier": false,
+    "show_buyer": false,
+    "show_ssid": false,
+    "show_campaign": false,
+    "campaign_status": null,
+    "delivery_status": null,
+    "buyer_status": null,
+    "show_data": null
   }
