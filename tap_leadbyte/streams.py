@@ -444,6 +444,12 @@ class BuyerReportsStream(ReportsStream):
         """Return URL parameters for buyer reports."""
         params = super().get_url_params(context, next_page_token)
         
+        # ✅ UVEK prikaži buyer podatke (campaign se uvek prikazuje)
+        params["showBuyer"] = "Yes"
+        
+        # ✅ Dodaj supplier podatke za kompletnu informaciju
+        params["showSupplier"] = "Yes" 
+        
         # Buyer-specific parameters
         if self.config.get("lead_type_api") is not None:
             params["leadTypeAPI"] = "Yes" if self.config["lead_type_api"] else "No"
@@ -451,12 +457,7 @@ class BuyerReportsStream(ReportsStream):
         if self.config.get("lead_type_import") is not None:
             params["leadTypeImport"] = "Yes" if self.config["lead_type_import"] else "No"
             
-        if self.config.get("show_supplier"):
-            params["showSupplier"] = "Yes"
-            
-        if self.config.get("show_buyer"):
-            params["showBuyer"] = "Yes"
-            
+        # Optional parameters
         if self.config.get("show_ssid"):
             params["showSSID"] = "Yes"
             
