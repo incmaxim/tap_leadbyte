@@ -368,6 +368,11 @@ class SupplierReportsStream(ReportsStream):
         """Return URL parameters for supplier reports."""
         params = super().get_url_params(context, next_page_token)
         
+        # ✅ DODATI OVE PARAMETRE:
+        # Uvek prikaži supplier i campaign podatke
+        params["showSupplier"] = "Yes"
+        params["showCampaign"] = "Yes"  # Dodano!
+        
         # Supplier-specific parameters
         if self.config.get("include_non_supplier_leads"):
             params["includeNonSupplierLeads"] = "Yes"
@@ -378,9 +383,7 @@ class SupplierReportsStream(ReportsStream):
         if self.config.get("lead_type_import") is not None:
             params["leadTypeImport"] = "Yes" if self.config["lead_type_import"] else "No"
             
-        if self.config.get("show_supplier"):
-            params["showSupplier"] = "Yes"
-            
+        # Ove možemo ostaviti kao user opcije:
         if self.config.get("show_ssid"):
             params["showSSID"] = "Yes"
             
