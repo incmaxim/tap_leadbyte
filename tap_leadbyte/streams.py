@@ -310,45 +310,48 @@ class SupplierReportsStream(ReportsStream):
     primary_keys = ["campaign_id", "supplier_id"]
     replication_key = None
     
-    schema = th.PropertiesList(
-        th.Property("campaign", th.ObjectType(
-            th.Property("id", th.StringType),
-            th.Property("name", th.StringType),
-            th.Property("reference", th.StringType),
-        )),
-        th.Property("supplier", th.ObjectType(
-            th.Property("id", th.StringType),
-            th.Property("name", th.StringType),
-            th.Property("sid", th.StringType),
-        )),
-        th.Property("leads", th.IntegerType),
-        th.Property("valid", th.IntegerType),
-        th.Property("invalid", th.IntegerType),
-        th.Property("validCR", th.NumberType),
-        th.Property("pending", th.IntegerType),
-        th.Property("rejected", th.IntegerType),
-        th.Property("payable", th.IntegerType),
-        th.Property("sold", th.IntegerType),
-        th.Property("returns", th.IntegerType),
-        th.Property("payableCR", th.NumberType),
-        th.Property("payout", th.NumberType),
-        th.Property("emailCost", th.NumberType),
-        th.Property("smsCost", th.NumberType),
-        th.Property("validationCost", th.NumberType),
-        th.Property("revenue", th.NumberType),
-        th.Property("profit", th.NumberType),
-        th.Property("eCPL", th.NumberType),
-        th.Property("eRPL", th.NumberType),
-        th.Property("payoutAdjusted", th.NumberType),
-        th.Property("revenueAdjusted", th.NumberType),
-        th.Property("profitAdjusted", th.NumberType),
-        th.Property("eCPLAdjusted", th.NumberType),
-        th.Property("eRPLAdjusted", th.NumberType),
-        th.Property("currency", th.StringType),
-        # Flattened primary keys
-        th.Property("campaign_id", th.StringType, description="Derived from campaign.id"),
-        th.Property("supplier_id", th.StringType, description="Derived from supplier.id"),
-    ).to_dict()
+    @property
+    def schema(self) -> dict:
+        """Force our schema definition."""
+        return th.PropertiesList(
+            th.Property("campaign", th.ObjectType(
+                th.Property("id", th.StringType),
+                th.Property("name", th.StringType),
+                th.Property("reference", th.StringType),
+            )),
+            th.Property("supplier", th.ObjectType(
+                th.Property("id", th.StringType),
+                th.Property("name", th.StringType),
+                th.Property("sid", th.StringType),
+            )),
+            th.Property("leads", th.IntegerType),
+            th.Property("valid", th.IntegerType),
+            th.Property("invalid", th.IntegerType),
+            th.Property("validCR", th.NumberType),
+            th.Property("pending", th.IntegerType),
+            th.Property("rejected", th.IntegerType),
+            th.Property("payable", th.IntegerType),
+            th.Property("sold", th.IntegerType),
+            th.Property("returns", th.IntegerType),
+            th.Property("payableCR", th.NumberType),
+            th.Property("payout", th.NumberType),
+            th.Property("emailCost", th.NumberType),
+            th.Property("smsCost", th.NumberType),
+            th.Property("validationCost", th.NumberType),
+            th.Property("revenue", th.NumberType),
+            th.Property("profit", th.NumberType),
+            th.Property("eCPL", th.NumberType),
+            th.Property("eRPL", th.NumberType),
+            th.Property("payoutAdjusted", th.NumberType),
+            th.Property("revenueAdjusted", th.NumberType),
+            th.Property("profitAdjusted", th.NumberType),
+            th.Property("eCPLAdjusted", th.NumberType),
+            th.Property("eRPLAdjusted", th.NumberType),
+            th.Property("currency", th.StringType),
+            # Flattened primary keys
+            th.Property("campaign_id", th.StringType, description="Derived from campaign.id"),
+            th.Property("supplier_id", th.StringType, description="Derived from supplier.id"),
+        ).to_dict()
     
     def post_process(self, row: dict, context: dict | None = None) -> dict | None:
         """Add flattened primary key fields."""
@@ -395,40 +398,43 @@ class BuyerReportsStream(ReportsStream):
     
     name = "buyer_reports"
     path = "/reports/buyer"
-    primary_keys = ["campaign_id", "buyer_id"]  # ✅ Ispravno - samo campaign i buyer
+    primary_keys = ["campaign_id", "buyer_id"]
     replication_key = None
     
-    schema = th.PropertiesList(
-        th.Property("campaign", th.ObjectType(
-            th.Property("id", th.StringType),  # ✅ StringType kao u dokumentaciji
-            th.Property("name", th.StringType),
-            th.Property("reference", th.StringType),
-        )),
-        th.Property("supplier", th.ObjectType(
-            th.Property("id", th.StringType),
-            th.Property("name", th.StringType),
-            th.Property("sid", th.StringType),
-        )),
-        th.Property("buyer", th.ObjectType(
-            th.Property("id", th.StringType),
-            th.Property("name", th.StringType),
-            th.Property("bid", th.StringType),
-        )),
-        th.Property("posted", th.IntegerType),
-        th.Property("accepted", th.IntegerType),
-        th.Property("sold", th.IntegerType),
-        th.Property("rejected", th.IntegerType),
-        th.Property("approvedCR", th.NumberType),
-        th.Property("returned", th.IntegerType),
-        th.Property("returnedPercent", th.NumberType),
-        th.Property("revenue", th.NumberType),
-        th.Property("RPL", th.NumberType),
-        th.Property("RPS", th.NumberType),
-        th.Property("currency", th.StringType),
-        # ✅ Flattened primary keys - samo campaign i buyer
-        th.Property("campaign_id", th.StringType, description="Derived from campaign.id"),
-        th.Property("buyer_id", th.StringType, description="Derived from buyer.id"),
-    ).to_dict()
+    @property
+    def schema(self) -> dict:
+        """Force our schema definition."""
+        return th.PropertiesList(
+            th.Property("campaign", th.ObjectType(
+                th.Property("id", th.StringType),
+                th.Property("name", th.StringType),
+                th.Property("reference", th.StringType),
+            )),
+            th.Property("supplier", th.ObjectType(
+                th.Property("id", th.StringType),
+                th.Property("name", th.StringType),
+                th.Property("sid", th.StringType),
+            )),
+            th.Property("buyer", th.ObjectType(
+                th.Property("id", th.StringType),
+                th.Property("name", th.StringType),
+                th.Property("bid", th.StringType),
+            )),
+            th.Property("posted", th.IntegerType),
+            th.Property("accepted", th.IntegerType),
+            th.Property("sold", th.IntegerType),
+            th.Property("rejected", th.IntegerType),
+            th.Property("approvedCR", th.NumberType),
+            th.Property("returned", th.IntegerType),
+            th.Property("returnedPercent", th.NumberType),
+            th.Property("revenue", th.NumberType),
+            th.Property("RPL", th.NumberType),
+            th.Property("RPS", th.NumberType),
+            th.Property("currency", th.StringType),
+            # Flattened primary keys
+            th.Property("campaign_id", th.StringType, description="Derived from campaign.id"),
+            th.Property("buyer_id", th.StringType, description="Derived from buyer.id"),
+        ).to_dict()
 
     def post_process(self, row: dict, context: dict | None = None) -> dict | None:
         """Add flattened primary key fields."""
@@ -447,7 +453,7 @@ class BuyerReportsStream(ReportsStream):
         # ✅ UVEK prikaži sve podatke
         params["showBuyer"] = "Yes"
         params["showSupplier"] = "Yes" 
-        params["showCampaign"] = "Yes"  # ✅ DODAJ OVO!
+        params["showCampaign"] = "Yes"
         
         # Buyer-specific parameters
         if self.config.get("lead_type_api") is not None:
