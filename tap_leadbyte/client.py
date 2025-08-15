@@ -11,6 +11,8 @@ from singer_sdk.helpers.jsonpath import extract_jsonpath
 from singer_sdk.pagination import BaseAPIPaginator  # noqa: TCH002
 from singer_sdk.streams import RESTStream
 
+import time
+
 if sys.version_info >= (3, 9):
     import importlib.resources as importlib_resources
 else:
@@ -169,4 +171,11 @@ class LeadByteStream(RESTStream):
             
         def __exit__(self, exc_type, exc_val, exc_tb):
             pass
+
+    def _request(self, prepared_request, context):
+        # Add delay for report endpoints to avoid rate limiting
+        if "/reports/" in prepared_request.url:
+            time.sleep(1)  # 1 sekunda delay
+        
+        return super()._request(prepared_request, context)
 
