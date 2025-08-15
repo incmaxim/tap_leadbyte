@@ -444,11 +444,10 @@ class BuyerReportsStream(ReportsStream):
         """Return URL parameters for buyer reports."""
         params = super().get_url_params(context, next_page_token)
         
-        # ✅ UVEK prikaži buyer podatke (campaign se uvek prikazuje)
+        # ✅ UVEK prikaži sve podatke
         params["showBuyer"] = "Yes"
-        
-        # ✅ Dodaj supplier podatke za kompletnu informaciju
         params["showSupplier"] = "Yes" 
+        params["showCampaign"] = "Yes"  # ✅ DODAJ OVO!
         
         # Buyer-specific parameters
         if self.config.get("lead_type_api") is not None:
