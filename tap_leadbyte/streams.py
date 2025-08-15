@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import typing as t
 from datetime import datetime, timezone
+from dateutil import parser  # ✅ Dodajemo dateutil import
 
 from singer_sdk import typing as th
 
@@ -21,11 +22,18 @@ class ReportsStream(LeadByteStream):
         """Return URL parameters for reports."""
         params = super().get_url_params(context, next_page_token)
         
-        # Add date parameters
-        params["from"] = self.config["start_date"].strftime("%Y-%m-%dT%H:%M:%SZ")
+        # ✅ Parse string dates to datetime objects
+        start_date = self.config["start_date"]
+        if isinstance(start_date, str):
+            start_date = parser.parse(start_date)
+        
+        params["from"] = start_date.strftime("%Y-%m-%dT%H:%M:%SZ")
         
         if self.config.get("end_date"):
-            params["to"] = self.config["end_date"].strftime("%Y-%m-%dT%H:%M:%SZ")
+            end_date = self.config["end_date"]
+            if isinstance(end_date, str):
+                end_date = parser.parse(end_date)
+            params["to"] = end_date.strftime("%Y-%m-%dT%H:%M:%SZ")
         else:
             params["to"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
         
