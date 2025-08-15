@@ -167,7 +167,7 @@ class TapLeadByte(Tap):
             streams.CampaignsStream(self),
             streams.DeliveriesStream(self),
             streams.RespondersStream(self),
-            streams.BuyersStream(self),
+            streams.BuyersStream(self),  # ✅ Samo jedan put!
         ]
 
 

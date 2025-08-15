@@ -133,7 +133,7 @@ class SmsReportsStream(ReportsStream):
     
     name = "sms_reports"
     path = "/reports/sms"
-    primary_keys = ["campaign.id", "responder.id", "supplier.id", "push.id"]
+    primary_keys = ["campaign_id", "responder_id", "supplier_id", "push_id"]
     replication_key = None
     
     schema = th.PropertiesList(
@@ -170,7 +170,20 @@ class SmsReportsStream(ReportsStream):
         th.Property("revenue", th.StringType),
         th.Property("profit", th.StringType),
         th.Property("currency", th.StringType),
+        # ✅ Dodati flattened primary key fields u schema:
+        th.Property("campaign_id", th.IntegerType, description="Derived from campaign.id"),
+        th.Property("responder_id", th.IntegerType, description="Derived from responder.id"),  
+        th.Property("supplier_id", th.IntegerType, description="Derived from supplier.id"),
+        th.Property("push_id", th.IntegerType, description="Derived from push.id"),
     ).to_dict()
+
+    def post_process(self, row: dict, context: dict | None = None) -> dict | None:
+        """Add flattened primary key fields."""
+        row["campaign_id"] = row["campaign"]["id"]
+        row["responder_id"] = row["responder"]["id"]  
+        row["supplier_id"] = row["supplier"]["id"]
+        row["push_id"] = row["push"]["id"]
+        return row
 
 
 class BulkEmailReportsStream(ReportsStream):
@@ -178,7 +191,7 @@ class BulkEmailReportsStream(ReportsStream):
     
     name = "bulk_email_reports"
     path = "/reports/bulkemail"
-    primary_keys = ["campaign.id", "responder.id", "supplier.id", "push.id"]
+    primary_keys = ["campaign_id", "responder_id", "supplier_id", "push_id"]
     replication_key = None
     
     schema = th.PropertiesList(
@@ -223,7 +236,7 @@ class BulkSmsReportsStream(ReportsStream):
     
     name = "bulk_sms_reports"
     path = "/reports/bulksms"
-    primary_keys = ["campaign.id", "responder.id", "supplier.id", "push.id"]
+    primary_keys = ["campaign_id", "responder_id", "supplier_id", "push_id"]
     replication_key = None
     
     schema = th.PropertiesList(
@@ -264,7 +277,62 @@ class BulkSmsReportsStream(ReportsStream):
 
 
 class SupplierReportsStream(ReportsStream):
-    """Supplier reports stream with additional parameters."""
+    """Supplier reports stream."""
+    
+    name = "supplier_reports"
+    path = "/reports/supplier"
+    primary_keys = ["campaign_id", "supplier_id"]
+    replication_key = None
+    
+    schema = th.PropertiesList(
+        th.Property("campaign", th.ObjectType(
+            th.Property("id", th.StringType),
+            th.Property("name", th.StringType),
+            th.Property("reference", th.StringType),
+        )),
+        th.Property("supplier", th.ObjectType(
+            th.Property("id", th.StringType),
+            th.Property("name", th.StringType),
+            th.Property("sid", th.StringType),
+        )),
+        th.Property("leads", th.IntegerType),
+        th.Property("valid", th.IntegerType),
+        th.Property("invalid", th.IntegerType),
+        th.Property("validCR", th.NumberType),
+        th.Property("pending", th.IntegerType),
+        th.Property("rejected", th.IntegerType),
+        th.Property("payable", th.IntegerType),
+        th.Property("sold", th.IntegerType),
+        th.Property("returns", th.IntegerType),
+        th.Property("payableCR", th.NumberType),
+        th.Property("payout", th.NumberType),
+        th.Property("emailCost", th.NumberType),
+        th.Property("smsCost", th.NumberType),
+        th.Property("validationCost", th.NumberType),
+        th.Property("revenue", th.NumberType),
+        th.Property("profit", th.NumberType),
+        th.Property("eCPL", th.NumberType),
+        th.Property("eRPL", th.NumberType),
+        th.Property("payoutAdjusted", th.NumberType),
+        th.Property("revenueAdjusted", th.NumberType),
+        th.Property("profitAdjusted", th.NumberType),
+        th.Property("eCPLAdjusted", th.NumberType),
+        th.Property("eRPLAdjusted", th.NumberType),
+        th.Property("currency", th.StringType),
+        # Flattened primary keys
+        th.Property("campaign_id", th.StringType, description="Derived from campaign.id"),
+        th.Property("supplier_id", th.StringType, description="Derived from supplier.id"),
+    ).to_dict()
+    
+    def post_process(self, row: dict, context: dict | None = None) -> dict | None:
+        """Add flattened primary key fields."""
+        row["campaign_id"] = row["campaign"]["id"]
+        if "supplier" in row:
+            row["supplier_id"] = row["supplier"]["id"]
+        else:
+            # Handle case when supplier is not present
+            row["supplier_id"] = "unknown"
+        return row
     
     def get_url_params(
         self,
@@ -294,8 +362,57 @@ class SupplierReportsStream(ReportsStream):
 
 
 class BuyerReportsStream(ReportsStream):
-    """Buyer reports stream with additional parameters."""
+    """Buyer reports stream."""
     
+    name = "buyer_reports"
+    path = "/reports/buyer"
+    primary_keys = ["campaign_id", "buyer_id"]
+    replication_key = None
+    
+    schema = th.PropertiesList(
+        th.Property("campaign", th.ObjectType(
+            th.Property("id", th.IntegerType),
+            th.Property("name", th.StringType),
+            th.Property("reference", th.StringType),
+        )),
+        th.Property("responder", th.ObjectType(
+            th.Property("id", th.IntegerType),
+            th.Property("reference", th.StringType),
+        )),
+        th.Property("supplier", th.ObjectType(
+            th.Property("id", th.IntegerType),
+            th.Property("name", th.StringType),
+            th.Property("sid", th.StringType),
+        )),
+        th.Property("push", th.ObjectType(
+            th.Property("id", th.IntegerType),
+            th.Property("name", th.StringType),
+        )),
+        th.Property("advertiser", th.ObjectType(
+            th.Property("id", th.IntegerType),
+            th.Property("name", th.StringType),
+        )),
+        th.Property("sent", th.StringType),
+        th.Property("delivered", th.StringType),
+        th.Property("opened", th.StringType),
+        th.Property("clicks", th.StringType),
+        th.Property("conversions", th.StringType),
+        th.Property("bounced", th.StringType),
+        th.Property("unsubscribed", th.StringType),
+        th.Property("cost", th.StringType),
+        th.Property("revenue", th.StringType),
+        th.Property("profit", th.StringType),
+        th.Property("currency", th.StringType),
+    ).to_dict()
+
+    def post_process(self, row: dict, context: dict | None = None) -> dict | None:
+        """Add flattened primary key fields."""
+        row["campaign_id"] = row["campaign"]["id"]
+        row["responder_id"] = row["responder"]["id"]  
+        row["supplier_id"] = row["supplier"]["id"]
+        row["push_id"] = row["push"]["id"]
+        return row
+
     def get_url_params(
         self,
         context: dict | None,
@@ -324,8 +441,57 @@ class BuyerReportsStream(ReportsStream):
 
 
 class CampaignReportsStream(ReportsStream):
-    """Campaign reports stream with additional parameters."""
+    """Campaign reports stream."""
     
+    name = "campaign_reports"
+    path = "/reports/campaign"
+    primary_keys = ["campaign_id", "responder_id", "supplier_id", "push_id"]
+    replication_key = None
+    
+    schema = th.PropertiesList(
+        th.Property("campaign", th.ObjectType(
+            th.Property("id", th.IntegerType),
+            th.Property("name", th.StringType),
+            th.Property("reference", th.StringType),
+        )),
+        th.Property("responder", th.ObjectType(
+            th.Property("id", th.IntegerType),
+            th.Property("reference", th.StringType),
+        )),
+        th.Property("supplier", th.ObjectType(
+            th.Property("id", th.IntegerType),
+            th.Property("name", th.StringType),
+            th.Property("sid", th.StringType),
+        )),
+        th.Property("push", th.ObjectType(
+            th.Property("id", th.IntegerType),
+            th.Property("name", th.StringType),
+        )),
+        th.Property("advertiser", th.ObjectType(
+            th.Property("id", th.IntegerType),
+            th.Property("name", th.StringType),
+        )),
+        th.Property("sent", th.StringType),
+        th.Property("delivered", th.StringType),
+        th.Property("opened", th.StringType),
+        th.Property("clicks", th.StringType),
+        th.Property("conversions", th.StringType),
+        th.Property("bounced", th.StringType),
+        th.Property("unsubscribed", th.StringType),
+        th.Property("cost", th.StringType),
+        th.Property("revenue", th.StringType),
+        th.Property("profit", th.StringType),
+        th.Property("currency", th.StringType),
+    ).to_dict()
+
+    def post_process(self, row: dict, context: dict | None = None) -> dict | None:
+        """Add flattened primary key fields."""
+        row["campaign_id"] = row["campaign"]["id"]
+        row["responder_id"] = row["responder"]["id"]  
+        row["supplier_id"] = row["supplier"]["id"]
+        row["push_id"] = row["push"]["id"]
+        return row
+
     def get_url_params(
         self,
         context: dict | None,
@@ -354,8 +520,57 @@ class CampaignReportsStream(ReportsStream):
 
 
 class LeadActivityReportsStream(ReportsStream):
-    """Lead activity reports stream with additional parameters."""
+    """Lead activity reports stream."""
     
+    name = "lead_activity_reports"
+    path = "/reports/leadactivity"
+    primary_keys = ["campaign_id", "responder_id", "supplier_id", "push_id"]
+    replication_key = None
+    
+    schema = th.PropertiesList(
+        th.Property("campaign", th.ObjectType(
+            th.Property("id", th.IntegerType),
+            th.Property("name", th.StringType),
+            th.Property("reference", th.StringType),
+        )),
+        th.Property("responder", th.ObjectType(
+            th.Property("id", th.IntegerType),
+            th.Property("reference", th.StringType),
+        )),
+        th.Property("supplier", th.ObjectType(
+            th.Property("id", th.IntegerType),
+            th.Property("name", th.StringType),
+            th.Property("sid", th.StringType),
+        )),
+        th.Property("push", th.ObjectType(
+            th.Property("id", th.IntegerType),
+            th.Property("name", th.StringType),
+        )),
+        th.Property("advertiser", th.ObjectType(
+            th.Property("id", th.IntegerType),
+            th.Property("name", th.StringType),
+        )),
+        th.Property("sent", th.StringType),
+        th.Property("delivered", th.StringType),
+        th.Property("opened", th.StringType),
+        th.Property("clicks", th.StringType),
+        th.Property("conversions", th.StringType),
+        th.Property("bounced", th.StringType),
+        th.Property("unsubscribed", th.StringType),
+        th.Property("cost", th.StringType),
+        th.Property("revenue", th.StringType),
+        th.Property("profit", th.StringType),
+        th.Property("currency", th.StringType),
+    ).to_dict()
+
+    def post_process(self, row: dict, context: dict | None = None) -> dict | None:
+        """Add flattened primary key fields."""
+        row["campaign_id"] = row["campaign"]["id"]
+        row["responder_id"] = row["responder"]["id"]  
+        row["supplier_id"] = row["supplier"]["id"]
+        row["push_id"] = row["push"]["id"]
+        return row
+
     def get_url_params(
         self,
         context: dict | None,
@@ -387,6 +602,24 @@ class LeadActivityReportsStream(ReportsStream):
 class CampaignsStream(LeadByteStream):
     """Campaigns stream with status filter."""
     
+    name = "campaigns"
+    path = "/campaigns"
+    primary_keys = ["id"]
+    replication_key = None
+    
+    schema = th.PropertiesList(
+        th.Property("id", th.IntegerType),
+        th.Property("name", th.StringType),
+        th.Property("reference", th.StringType),
+        th.Property("status", th.StringType),
+        th.Property("start_date", th.StringType),
+        th.Property("end_date", th.StringType),
+        th.Property("created_at", th.StringType),
+        th.Property("updated_at", th.StringType),
+    ).to_dict()
+    
+    records_jsonpath = "$.campaigns[*]"
+    
     def get_url_params(
         self,
         context: dict | None,
@@ -406,6 +639,24 @@ class CampaignsStream(LeadByteStream):
 
 class DeliveriesStream(LeadByteStream):
     """Deliveries stream with status filter."""
+    
+    name = "deliveries"
+    path = "/deliveries"
+    primary_keys = ["id"]
+    replication_key = None
+    
+    schema = th.PropertiesList(
+        th.Property("id", th.IntegerType),
+        th.Property("campaign_id", th.IntegerType),
+        th.Property("responder_id", th.IntegerType),
+        th.Property("supplier_id", th.IntegerType),
+        th.Property("push_id", th.IntegerType),
+        th.Property("status", th.StringType),
+        th.Property("created_at", th.StringType),
+        th.Property("updated_at", th.StringType),
+    ).to_dict()
+    
+    records_jsonpath = "$.deliveries[*]"
     
     def get_url_params(
         self,
@@ -427,6 +678,21 @@ class DeliveriesStream(LeadByteStream):
 class RespondersStream(LeadByteStream):
     """Responders stream."""
     
+    name = "responders"
+    path = "/responders"
+    primary_keys = ["id"]
+    replication_key = None
+    
+    schema = th.PropertiesList(
+        th.Property("id", th.IntegerType),
+        th.Property("name", th.StringType),
+        th.Property("reference", th.StringType),
+        th.Property("created_at", th.StringType),
+        th.Property("updated_at", th.StringType),
+    ).to_dict()
+    
+    records_jsonpath = "$.responders[*]"
+    
     def get_url_params(
         self,
         context: dict | None,
@@ -442,7 +708,29 @@ class RespondersStream(LeadByteStream):
 
 
 class BuyersStream(LeadByteStream):
-    """Buyers stream with status filter."""
+    """Buyers stream."""
+    
+    name = "buyers"
+    path = "/buyers"
+    primary_keys = ["company"]
+    replication_key = None
+    
+    schema = th.PropertiesList(
+        th.Property("company", th.StringType),
+        th.Property("street1", th.StringType),
+        th.Property("towncity", th.StringType),
+        th.Property("county", th.StringType),
+        th.Property("country", th.StringType),
+        th.Property("postcode", th.StringType),
+        th.Property("phone", th.StringType),
+        th.Property("external_ref", th.StringType),
+        th.Property("external_ref_2", th.StringType),
+        th.Property("status", th.StringType),
+        th.Property("credit_amount", th.StringType),
+        th.Property("credit_balance", th.StringType),
+    ).to_dict()
+    
+    records_jsonpath = "$.buyers[*]"
     
     def get_url_params(
         self,
