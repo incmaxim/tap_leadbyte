@@ -310,62 +310,60 @@ class SupplierReportsStream(ReportsStream):
     primary_keys = ["campaign_id", "supplier_id"]
     replication_key = None
     
-    # ✅ Direktno postavljanje _schema attribute
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._schema = {
-            "type": "object",
-            "properties": {
-                "campaign": {
-                    "type": ["object", "null"],
-                    "properties": {
-                        "id": {"type": ["string", "null"]},
-                        "name": {"type": ["string", "null"]},
-                        "reference": {"type": ["string", "null"]}
-                    }
-                },
-                "supplier": {
-                    "type": ["object", "null"],
-                    "properties": {
-                        "id": {"type": ["string", "null"]},
-                        "name": {"type": ["string", "null"]},
-                        "sid": {"type": ["string", "null"]}
-                    }
-                },
-                "leads": {"type": ["integer", "null"]},
-                "valid": {"type": ["integer", "null"]},
-                "invalid": {"type": ["integer", "null"]},
-                "validCR": {"type": ["number", "null"]},
-                "pending": {"type": ["integer", "null"]},
-                "rejected": {"type": ["integer", "null"]},
-                "payable": {"type": ["integer", "null"]},
-                "sold": {"type": ["integer", "null"]},
-                "returns": {"type": ["integer", "null"]},
-                "payableCR": {"type": ["number", "null"]},
-                "payout": {"type": ["number", "null"]},
-                "emailCost": {"type": ["number", "null"]},
-                "smsCost": {"type": ["number", "null"]},
-                "validationCost": {"type": ["number", "null"]},
-                "revenue": {"type": ["number", "null"]},
-                "profit": {"type": ["number", "null"]},
-                "eCPL": {"type": ["number", "null"]},
-                "eRPL": {"type": ["number", "null"]},
-                "payoutAdjusted": {"type": ["number", "null"]},
-                "revenueAdjusted": {"type": ["number", "null"]},
-                "profitAdjusted": {"type": ["number", "null"]},
-                "eCPLAdjusted": {"type": ["number", "null"]},
-                "eRPLAdjusted": {"type": ["number", "null"]},
-                "currency": {"type": ["string", "null"]},
-                "campaign_id": {
-                    "type": ["string", "null"],
-                    "description": "Derived from campaign.id"
-                },
-                "supplier_id": {
-                    "type": ["string", "null"],
-                    "description": "Derived from supplier.id"
+    # ✅ DIREKTNO postavljanje schema kao class attribute
+    schema = {
+        "type": "object",
+        "properties": {
+            "campaign": {
+                "type": ["object", "null"],
+                "properties": {
+                    "id": {"type": ["string", "null"]},
+                    "name": {"type": ["string", "null"]},
+                    "reference": {"type": ["string", "null"]}
                 }
+            },
+            "supplier": {
+                "type": ["object", "null"],
+                "properties": {
+                    "id": {"type": ["string", "null"]},
+                    "name": {"type": ["string", "null"]},
+                    "sid": {"type": ["string", "null"]}
+                }
+            },
+            "leads": {"type": ["integer", "null"]},
+            "valid": {"type": ["integer", "null"]},
+            "invalid": {"type": ["integer", "null"]},
+            "validCR": {"type": ["number", "null"]},
+            "pending": {"type": ["integer", "null"]},
+            "rejected": {"type": ["integer", "null"]},
+            "payable": {"type": ["integer", "null"]},
+            "sold": {"type": ["integer", "null"]},
+            "returns": {"type": ["integer", "null"]},
+            "payableCR": {"type": ["number", "null"]},
+            "payout": {"type": ["number", "null"]},
+            "emailCost": {"type": ["number", "null"]},
+            "smsCost": {"type": ["number", "null"]},
+            "validationCost": {"type": ["number", "null"]},
+            "revenue": {"type": ["number", "null"]},
+            "profit": {"type": ["number", "null"]},
+            "eCPL": {"type": ["number", "null"]},
+            "eRPL": {"type": ["number", "null"]},
+            "payoutAdjusted": {"type": ["number", "null"]},
+            "revenueAdjusted": {"type": ["number", "null"]},
+            "profitAdjusted": {"type": ["number", "null"]},
+            "eCPLAdjusted": {"type": ["number", "null"]},
+            "eRPLAdjusted": {"type": ["number", "null"]},
+            "currency": {"type": ["string", "null"]},
+            "campaign_id": {
+                "type": ["string", "null"],
+                "description": "Derived from campaign.id"
+            },
+            "supplier_id": {
+                "type": ["string", "null"],
+                "description": "Derived from supplier.id"
             }
         }
+    }
     
     def post_process(self, row: dict, context: dict | None = None) -> dict | None:
         """Add flattened primary key fields."""
@@ -373,7 +371,6 @@ class SupplierReportsStream(ReportsStream):
         if "supplier" in row:
             row["supplier_id"] = row["supplier"]["id"]
         else:
-            # Handle case when supplier is not present
             row["supplier_id"] = "unknown"
         return row
     
@@ -385,12 +382,9 @@ class SupplierReportsStream(ReportsStream):
         """Return URL parameters for supplier reports."""
         params = super().get_url_params(context, next_page_token)
         
-        # ✅ DODATI OVE PARAMETRE:
-        # Uvek prikaži supplier i campaign podatke
         params["showSupplier"] = "Yes"
-        params["showCampaign"] = "Yes"  # Dodano!
+        params["showCampaign"] = "Yes"
         
-        # Supplier-specific parameters
         if self.config.get("include_non_supplier_leads"):
             params["includeNonSupplierLeads"] = "Yes"
             
@@ -400,7 +394,6 @@ class SupplierReportsStream(ReportsStream):
         if self.config.get("lead_type_import") is not None:
             params["leadTypeImport"] = "Yes" if self.config["lead_type_import"] else "No"
             
-        # Ove možemo ostaviti kao user opcije:
         if self.config.get("show_ssid"):
             params["showSSID"] = "Yes"
             
@@ -415,57 +408,55 @@ class BuyerReportsStream(ReportsStream):
     primary_keys = ["campaign_id", "buyer_id"]
     replication_key = None
     
-    # ✅ Direktno postavljanje _schema attribute
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._schema = {
-            "type": "object",
-            "properties": {
-                "campaign": {
-                    "type": ["object", "null"],
-                    "properties": {
-                        "id": {"type": ["string", "null"]},
-                        "name": {"type": ["string", "null"]},
-                        "reference": {"type": ["string", "null"]}
-                    }
-                },
-                "supplier": {
-                    "type": ["object", "null"],
-                    "properties": {
-                        "id": {"type": ["string", "null"]},
-                        "name": {"type": ["string", "null"]},
-                        "sid": {"type": ["string", "null"]}
-                    }
-                },
-                "buyer": {
-                    "type": ["object", "null"],
-                    "properties": {
-                        "id": {"type": ["string", "null"]},
-                        "name": {"type": ["string", "null"]},
-                        "bid": {"type": ["string", "null"]}
-                    }
-                },
-                "posted": {"type": ["integer", "null"]},
-                "accepted": {"type": ["integer", "null"]},
-                "sold": {"type": ["integer", "null"]},
-                "rejected": {"type": ["integer", "null"]},
-                "approvedCR": {"type": ["number", "null"]},
-                "returned": {"type": ["integer", "null"]},
-                "returnedPercent": {"type": ["number", "null"]},
-                "revenue": {"type": ["number", "null"]},
-                "RPL": {"type": ["number", "null"]},
-                "RPS": {"type": ["number", "null"]},
-                "currency": {"type": ["string", "null"]},
-                "campaign_id": {
-                    "type": ["string", "null"],
-                    "description": "Derived from campaign.id"
-                },
-                "buyer_id": {
-                    "type": ["string", "null"],
-                    "description": "Derived from buyer.id"
+    # ✅ DIREKTNO postavljanje schema kao class attribute
+    schema = {
+        "type": "object",
+        "properties": {
+            "campaign": {
+                "type": ["object", "null"],
+                "properties": {
+                    "id": {"type": ["string", "null"]},
+                    "name": {"type": ["string", "null"]},
+                    "reference": {"type": ["string", "null"]}
                 }
+            },
+            "supplier": {
+                "type": ["object", "null"],
+                "properties": {
+                    "id": {"type": ["string", "null"]},
+                    "name": {"type": ["string", "null"]},
+                    "sid": {"type": ["string", "null"]}
+                }
+            },
+            "buyer": {
+                "type": ["object", "null"],
+                "properties": {
+                    "id": {"type": ["string", "null"]},
+                    "name": {"type": ["string", "null"]},
+                    "bid": {"type": ["string", "null"]}
+                }
+            },
+            "posted": {"type": ["integer", "null"]},
+            "accepted": {"type": ["integer", "null"]},
+            "sold": {"type": ["integer", "null"]},
+            "rejected": {"type": ["integer", "null"]},
+            "approvedCR": {"type": ["number", "null"]},
+            "returned": {"type": ["integer", "null"]},
+            "returnedPercent": {"type": ["number", "null"]},
+            "revenue": {"type": ["number", "null"]},
+            "RPL": {"type": ["number", "null"]},
+            "RPS": {"type": ["number", "null"]},
+            "currency": {"type": ["string", "null"]},
+            "campaign_id": {
+                "type": ["string", "null"],
+                "description": "Derived from campaign.id"
+            },
+            "buyer_id": {
+                "type": ["string", "null"],
+                "description": "Derived from buyer.id"
             }
         }
+    }
 
     def post_process(self, row: dict, context: dict | None = None) -> dict | None:
         """Add flattened primary key fields."""
@@ -481,19 +472,16 @@ class BuyerReportsStream(ReportsStream):
         """Return URL parameters for buyer reports."""
         params = super().get_url_params(context, next_page_token)
         
-        # ✅ UVEK prikaži sve podatke
         params["showBuyer"] = "Yes"
         params["showSupplier"] = "Yes" 
         params["showCampaign"] = "Yes"
         
-        # Buyer-specific parameters
         if self.config.get("lead_type_api") is not None:
             params["leadTypeAPI"] = "Yes" if self.config["lead_type_api"] else "No"
             
         if self.config.get("lead_type_import") is not None:
             params["leadTypeImport"] = "Yes" if self.config["lead_type_import"] else "No"
             
-        # Optional parameters
         if self.config.get("show_ssid"):
             params["showSSID"] = "Yes"
             
