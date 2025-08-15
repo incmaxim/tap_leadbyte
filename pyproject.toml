@@ -1,0 +1,23 @@
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "tap-leadbyte"
+version = "0.1.0"
+description = "Singer tap for LeadByte API"
+authors = ["Your Name <your.email@example.com>"]
+readme = "README.md"
+packages = [{include = "tap_leadbyte"}]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+singer-sdk = "^0.34.0"
+requests = "^2.31.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.0"
+singer-sdk = {extras = ["testing"], version = "^0.34.0"}
+
+[tool.poetry.scripts]
+tap-leadbyte = "tap_leadbyte.tap:TapLeadByte.cli"
