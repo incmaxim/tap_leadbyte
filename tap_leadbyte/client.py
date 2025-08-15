@@ -93,22 +93,22 @@ class LeadByteStream(RESTStream):
         return None
 
     def parse_response(self, response: requests.Response) -> Iterable[dict]:
-        """Parse the response and return an iterator of result records.
-
-        Args:
-            response: The HTTP ``requests.Response`` object.
-
-        Yields:
-            Each record from the source.
-        """
+        """Parse the response and return an iterator of result records."""
         resp_json = response.json()
         
         # Check for API errors
         if resp_json.get("status") != "Success":
             self.logger.error(f"API Error: {resp_json.get('message', 'Unknown error')}")
             return
+        
+        # ✅ DODATI OVAJ LOG ZA DEBUG:
+        if self.name in ["buyer_reports", "supplier_reports"]:
+            self.logger.info(f"🔍 Raw API response for {self.name}: {resp_json.get('data', [])[:1]}")  # Prvi record
             
         for row in extract_jsonpath(self.records_jsonpath, input=resp_json):
+            # ✅ DODATI I OVAJ LOG:
+            if self.name in ["buyer_reports", "supplier_reports"]:
+                self.logger.info(f"🔍 Parsed row for {self.name}: {row}")
             yield row
 
     def get_new_paginator(self) -> BaseAPIPaginator:
