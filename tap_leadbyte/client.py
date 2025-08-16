@@ -100,15 +100,8 @@ class LeadByteStream(RESTStream):
         if resp_json.get("status") != "Success":
             self.logger.error(f"API Error: {resp_json.get('message', 'Unknown error')}")
             return
-        
-        # ✅ DODATI OVAJ LOG ZA DEBUG:
-        if self.name in ["buyer_reports", "supplier_reports"]:
-            self.logger.info(f"🔍 Raw API response for {self.name}: {resp_json.get('data', [])[:1]}")  # Prvi record
             
         for row in extract_jsonpath(self.records_jsonpath, input=resp_json):
-            # ✅ DODATI I OVAJ LOG:
-            if self.name in ["buyer_reports", "supplier_reports"]:
-                self.logger.info(f"🔍 Parsed row for {self.name}: {row}")
             yield row
 
     def get_new_paginator(self) -> BaseAPIPaginator:
@@ -173,11 +166,6 @@ class LeadByteStream(RESTStream):
             pass
 
     def _request(self, prepared_request, context):
-        # ✅ DODATI OVAJ LOG:
-        # Log complete URL for debugging
-        full_url = prepared_request.url
-        self.logger.info(f"🔗 API Call [{self.name}]: {full_url}")
-        
         # Add delay for report endpoints to avoid rate limiting
         if "/reports/" in prepared_request.url:
             time.sleep(1)  # 1 sekunda delay
